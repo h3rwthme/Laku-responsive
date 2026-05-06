@@ -31,8 +31,7 @@ function AppContent() {
     return (
       <div className="min-h-screen w-full bg-[#E8EDF8] flex justify-center items-center">
         <div
-          className="w-full max-w-[430px] min-h-screen bg-[#F8F9FD] flex flex-col relative"
-        >
+          className="w-full max-w-[430px] min-h-screen bg-[#F8F9FD] flex flex-col relative">
           <StatusBar />
           <TopNav />
           <main className="flex-1 flex flex-col overflow-hidden relative">
