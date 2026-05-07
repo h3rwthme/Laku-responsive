@@ -9,11 +9,17 @@ import Products from '@/pages/Products';
 import POS from '@/pages/POS';
 import Records from '@/pages/Records';
 import Insights from '@/pages/Insights';
+import Login from '@/pages/Login';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 function AppContent() {
   const { state } = useApp();
   const isMobile = useIsMobile();
+
+  // If not authenticated, show Login page full-screen
+  if (!state.user) {
+    return <Login />;
+  }
 
   const renderPage = () => {
     switch (state.activeTab) {

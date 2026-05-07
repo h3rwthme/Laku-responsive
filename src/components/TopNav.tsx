@@ -1,5 +1,5 @@
 import { useApp } from '@/context/AppContext';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useIsTablet } from '@/hooks/use-mobile';
 
@@ -12,7 +12,7 @@ const tabTitles: Record<string, { title: string; subtitle: string }> = {
 };
 
 export default function TopNav({ isDesktop = false }: { isDesktop?: boolean }) {
-  const { state, showToast } = useApp();
+  const { state, showToast, logout } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
   const isTablet = useIsTablet();
   const currentTab = tabTitles[state.activeTab] || tabTitles.dashboard;
@@ -49,6 +49,17 @@ export default function TopNav({ isDesktop = false }: { isDesktop?: boolean }) {
           >
             <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#F97316] rounded-full border border-[#1A56DB]" />
             <Bell size={18} className="text-white" strokeWidth={2} />
+          </button>
+          <button
+            className="w-[34px] h-[34px] rounded-full bg-white/20 flex items-center justify-center
+                       active:bg-white/30 transition-colors active:scale-95 hover:bg-red-500/30"
+            onClick={() => {
+              logout();
+              showToast('Logout berhasil');
+            }}
+            title="Logout"
+          >
+            <LogOut size={18} className="text-white" strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -98,6 +109,19 @@ export default function TopNav({ isDesktop = false }: { isDesktop?: boolean }) {
         >
           S
         </div>
+
+        {/* Logout Button */}
+        <button
+          className="w-9 h-9 rounded-xl bg-[#fee2e2] flex items-center justify-center
+                     hover:bg-[#fecaca] transition-colors active:scale-95"
+          onClick={() => {
+            logout();
+            showToast('Logout berhasil');
+          }}
+          title="Logout"
+        >
+          <LogOut size={16} className="text-[#ef4444]" strokeWidth={2} />
+        </button>
       </div>
     </div>
   );

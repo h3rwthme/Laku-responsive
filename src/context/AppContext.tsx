@@ -77,6 +77,7 @@ interface AppState {
   cart: CartItem[];
   activeTab: TabType;
   toast: ToastState;
+  user?: { id: string; name: string; email: string } | null;
 }
 
 type AppAction =
@@ -90,7 +91,9 @@ type AppAction =
   | { type: 'UPDATE_CART_QTY'; payload: { productId: string; delta: number } }
   | { type: 'CLEAR_CART' }
   | { type: 'SHOW_TOAST'; payload: string }
-  | { type: 'HIDE_TOAST' };
+  | { type: 'HIDE_TOAST' }
+  | { type: 'SET_USER'; payload: { id: string; name: string; email: string } }
+  | { type: 'LOGOUT' };
 
 const initialState: AppState = {
   products: initialProducts,
@@ -98,6 +101,7 @@ const initialState: AppState = {
   cart: [],
   activeTab: 'dashboard',
   toast: { visible: false, message: '' },
+  user: null,
 };
 
 function generateId(): string {
@@ -201,6 +205,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'HIDE_TOAST':
       return { ...state, toast: { visible: false, message: '' } };
 
+      case 'SET_USER':
+        return { ...state, user: action.payload };
+
+      case 'LOGOUT':
+        return { ...state, user: null };
+
     default:
       return state;
   }
@@ -210,20 +220,40 @@ interface AppContextType {
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
   showToast: (message: string) => void;
+  login: (user: { id: string; name: string; email: string }) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
+  const [state, dispatch] = useReducer(appReducer, initialState, (init) => {
+    try {
+      const raw = localStorage.getItem('user');
+      const user = raw ? JSON.parse(raw) : null;
+      return { ...init, user };
+    } catch (err) {
+      return { ...init, user: null };
+    }
+  });
 
   const showToast = useCallback((message: string) => {
     dispatch({ type: 'SHOW_TOAST', payload: message });
     setTimeout(() => dispatch({ type: 'HIDE_TOAST' }), 2200);
   }, []);
 
+  const login = useCallback((user: { id: string; name: string; email: string }) => {
+    try { localStorage.setItem('user', JSON.stringify(user)); } catch (e) {}
+    dispatch({ type: 'SET_USER', payload: user });
+  }, []);
+
+  const logout = useCallback(() => {
+    try { localStorage.removeItem('user'); } catch (e) {}
+    dispatch({ type: 'LOGOUT' });
+  }, []);
+
   return (
-    <AppContext.Provider value={{ state, dispatch, showToast }}>
+    <AppContext.Provider value={{ state, dispatch, showToast, login, logout }}>
       {children}
     </AppContext.Provider>
   );
