@@ -1,6 +1,6 @@
 import { useApp } from '@/context/AppContext';
-import { Bell, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Bell, Search, LogOut } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useIsTablet } from '@/hooks/use-mobile';
 
 const tabTitles: Record<string, { title: string; subtitle: string }> = {
@@ -12,10 +12,33 @@ const tabTitles: Record<string, { title: string; subtitle: string }> = {
 };
 
 export default function TopNav({ isDesktop = false }: { isDesktop?: boolean }) {
-  const { state, showToast } = useApp();
+  const { state, showToast, logout } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const isTablet = useIsTablet();
   const currentTab = tabTitles[state.activeTab] || tabTitles.dashboard;
+  const profileRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileOpen && profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => window.removeEventListener('mousedown', handleClickOutside);
+  }, [profileOpen]);
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setProfileOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, []);
+
 
   // Mobile TopNav (unchanged original style)
   if (!isDesktop) {
@@ -32,13 +55,33 @@ export default function TopNav({ isDesktop = false }: { isDesktop?: boolean }) {
           </div>
         </div>
         <div className="flex gap-2.5 items-center">
-          <div
-            className="w-[34px] h-[34px] rounded-full flex items-center justify-center text-sm font-bold text-white cursor-pointer
-                        bg-gradient-to-br from-[#f9c97c] to-[#F97316] border-2 border-white/50 active:scale-95 transition-transform"
-            onClick={() => showToast('Profil Warung Bu Sri')}
+          <div ref={profileRef} className="relative">
+          <button
+            type="button"
+            className="w-[34px] h-[34px] rounded-full flex items-center justify-center text-sm font-bold text-white cursor-pointer bg-gradient-to-br from-[#f9c97c] to-[#F97316] border-2 border-white/50 active:scale-95 transition-transform"
+            onClick={() => setProfileOpen((value) => !value)}
+            aria-haspopup="menu"
+            aria-expanded={profileOpen}
           >
             S
-          </div>
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 top-12 z-50 min-w-[180px] overflow-hidden rounded-2xl border border-[#EEF0F6] bg-white shadow-xl">
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setProfileOpen(false);
+                  showToast('Logout berhasil');
+                }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
           <button
             className="relative w-[34px] h-[34px] rounded-full bg-white/20 flex items-center justify-center
                        active:bg-white/30 transition-colors active:scale-95"
@@ -91,12 +134,36 @@ export default function TopNav({ isDesktop = false }: { isDesktop?: boolean }) {
         </button>
 
         {/* Avatar */}
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white cursor-pointer
-                      bg-gradient-to-br from-[#f9c97c] to-[#F97316] active:scale-95 transition-transform"
-          onClick={() => showToast('Profil Warung Bu Sri')}
-        >
-          S
+        <div ref={profileRef} className="relative">
+          <button
+            type="button"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white cursor-pointer bg-gradient-to-br from-[#f9c97c] to-[#F97316] active:scale-95 transition-transform"
+            onClick={() => setProfileOpen((value) => !value)}
+            aria-haspopup="menu"
+            aria-expanded={profileOpen}
+          >
+            S
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 top-11 z-50 min-w-[200px] overflow-hidden rounded-3xl border border-[#EEF0F6] bg-white shadow-xl">
+              <div className="px-4 py-3 border-b border-[#EEF0F6]">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#9BA3BC]">Logged in as</p>
+                <p className="mt-1 truncate text-sm font-semibold text-[#1A1F3A]">{state.auth.user?.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setProfileOpen(false);
+                  showToast('Logout berhasil');
+                }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

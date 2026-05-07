@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import type { Product, Transaction, CartItem, TabType, ToastState } from '@/types';
+import type { Product, Transaction, CartItem, TabType, ToastState, User, AuthState } from '@/types';
 
 // Sample initial products
 const initialProducts: Product[] = [
@@ -77,6 +77,7 @@ interface AppState {
   cart: CartItem[];
   activeTab: TabType;
   toast: ToastState;
+  auth: AuthState;
 }
 
 type AppAction =
@@ -90,7 +91,9 @@ type AppAction =
   | { type: 'UPDATE_CART_QTY'; payload: { productId: string; delta: number } }
   | { type: 'CLEAR_CART' }
   | { type: 'SHOW_TOAST'; payload: string }
-  | { type: 'HIDE_TOAST' };
+  | { type: 'HIDE_TOAST' }
+  | { type: 'LOGIN'; payload: User }
+  | { type: 'LOGOUT' };
 
 const initialState: AppState = {
   products: initialProducts,
@@ -98,6 +101,7 @@ const initialState: AppState = {
   cart: [],
   activeTab: 'dashboard',
   toast: { visible: false, message: '' },
+  auth: { isLoggedIn: false, user: null },
 };
 
 function generateId(): string {
@@ -201,6 +205,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'HIDE_TOAST':
       return { ...state, toast: { visible: false, message: '' } };
 
+    case 'LOGIN':
+      return {
+        ...state,
+        auth: { isLoggedIn: true, user: action.payload },
+      };
+
+    case 'LOGOUT':
+      return {
+        ...state,
+        auth: { isLoggedIn: false, user: null },
+      };
+
     default:
       return state;
   }
@@ -210,6 +226,8 @@ interface AppContextType {
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
   showToast: (message: string) => void;
+  login: (email: string, password: string) => boolean;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -222,8 +240,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => dispatch({ type: 'HIDE_TOAST' }), 2200);
   }, []);
 
+  const login = useCallback((email: string, password: string): boolean => {
+    // Simple mock authentication - in real app, validate against backend
+    if (email && password && email.includes('@')) {
+      const user: User = {
+        id: '1',
+        email,
+        name: email.split('@')[0],
+        role: 'admin',
+        createdAt: new Date().toISOString(),
+      };
+      dispatch({ type: 'LOGIN', payload: user });
+      return true;
+    }
+    return false;
+  }, []);
+
+  const logout = useCallback(() => {
+    dispatch({ type: 'LOGOUT' });
+  }, []);
+
   return (
-    <AppContext.Provider value={{ state, dispatch, showToast }}>
+    <AppContext.Provider value={{ state, dispatch, showToast, login, logout }}>
       {children}
     </AppContext.Provider>
   );

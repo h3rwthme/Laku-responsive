@@ -45,3 +45,16 @@ export interface DashboardStats {
   todayExpense: number;
   targetProfit: number;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'user';
+  createdAt: string;
+}
+
+export interface AuthState {
+  isLoggedIn: boolean;
+  user: User | null;
+}
