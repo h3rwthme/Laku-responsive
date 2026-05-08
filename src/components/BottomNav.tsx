@@ -29,7 +29,7 @@ export default function BottomNav() {
             <button
               key={tab.key}
               onClick={() => dispatch({ type: 'SET_TAB', payload: tab.key })}
-              className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-colors duration-150 min-w-[56px]
+              className="relative flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-colors duration-150 min-w-[56px]
                          active:scale-95"
             >
               <div className="relative">
@@ -43,7 +43,7 @@ export default function BottomNav() {
                 {tab.label}
               </span>
               {isActive && (
-                <div className="absolute bottom-1 w-4 h-0.5 bg-[#1A56DB] rounded-full" />
+                <div className="w-4 h-0.5 bg-[#1A56DB] rounded-full" />
               )}
             </button>
           );

@@ -70,19 +70,19 @@ export default function SideNav() {
         })}
       </div>
 
-      {/* User Avatar */}
+      {/* User Avatar - dynamic dari state */}
       <div className={`p-3 border-t border-[#EEF0F6] flex items-center gap-3 ${isTablet ? 'justify-center' : 'px-4'}`}>
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0
                     bg-gradient-to-br from-[#f9c97c] to-[#F97316] border-2 border-white"
           style={{ boxShadow: '0 2px 8px rgba(249,115,22,0.3)' }}
         >
-          S
+          {state.user?.name?.[0]?.toUpperCase() || 'U'}
         </div>
         {!isTablet && (
           <div className="min-w-0">
-            <div className="text-xs font-bold text-[#1A1F3A] truncate">Bu Sri</div>
-            <div className="text-[10px] text-[#9BA3BC] font-medium truncate">Warung Bu Sri</div>
+            <div className="text-xs font-bold text-[#1A1F3A] truncate">{state.user?.name || 'User'}</div>
+            <div className="text-[10px] text-[#9BA3BC] font-medium truncate">{state.user?.email || ''}</div>
           </div>
         )}
       </div>

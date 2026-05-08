@@ -93,6 +93,7 @@ type AppAction =
   | { type: 'SHOW_TOAST'; payload: string }
   | { type: 'HIDE_TOAST' }
   | { type: 'SET_USER'; payload: { id: string; name: string; email: string } }
+  | { type: 'UPDATE_USER'; payload: { name?: string; email?: string } }
   | { type: 'LOGOUT' };
 
 const initialState: AppState = {
@@ -205,11 +206,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'HIDE_TOAST':
       return { ...state, toast: { visible: false, message: '' } };
 
-      case 'SET_USER':
-        return { ...state, user: action.payload };
+    case 'SET_USER':
+      return { ...state, user: action.payload };
 
-      case 'LOGOUT':
-        return { ...state, user: null };
+    case 'UPDATE_USER':
+      if (!state.user) return state;
+      return { ...state, user: { ...state.user, ...action.payload } };
+
+    case 'LOGOUT':
+      return { ...state, user: null };
 
     default:
       return state;
@@ -222,6 +227,7 @@ interface AppContextType {
   showToast: (message: string) => void;
   login: (user: { id: string; name: string; email: string }) => void;
   logout: () => void;
+  updateUser: (updates: { name?: string; email?: string }) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -252,8 +258,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'LOGOUT' });
   }, []);
 
+  const updateUser = useCallback((updates: { name?: string; email?: string }) => {
+    if (!state.user) return;
+    const updatedUser = { ...state.user, ...updates };
+    try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+    dispatch({ type: 'UPDATE_USER', payload: updates });
+  }, [state.user]);
+
   return (
-    <AppContext.Provider value={{ state, dispatch, showToast, login, logout }}>
+    <AppContext.Provider value={{ state, dispatch, showToast, login, logout, updateUser }}>
       {children}
     </AppContext.Provider>
   );

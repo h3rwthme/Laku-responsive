@@ -12,17 +12,16 @@ export default function Records() {
 
   const now = new Date();
   const today = now.toISOString().split('T')[0];
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   const filteredTransactions = useMemo(() => {
+    const nowMs = now.getTime();
     switch (timeFilter) {
       case 'today': return state.transactions.filter(t => t.createdAt.startsWith(today));
-      case 'week': return state.transactions.filter(t => t.createdAt >= weekAgo);
-      case 'month': return state.transactions.filter(t => t.createdAt >= monthAgo);
+      case 'week': return state.transactions.filter(t => new Date(t.createdAt).getTime() >= nowMs - 7 * 24 * 60 * 60 * 1000);
+      case 'month': return state.transactions.filter(t => new Date(t.createdAt).getTime() >= nowMs - 30 * 24 * 60 * 60 * 1000);
       default: return state.transactions;
     }
-  }, [state.transactions, timeFilter]);
+  }, [state.transactions, timeFilter, today]);
 
   const stats = useMemo(() => {
     const revenue = filteredTransactions.filter(t => t.type === 'OUT').reduce((sum, t) => sum + t.totalPrice, 0);

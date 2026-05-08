@@ -113,34 +113,28 @@ export default function Dashboard() {
   };
 
   const recentTx = useMemo(() => {
-    const txMap = new Map<string, { time: string; desc: string; ai: string; type: 'sale' | 'purchase' }>();
-    state.transactions.slice(0, 6).forEach(t => {
-      const hour = new Date(t.createdAt).getHours().toString().padStart(2, '0');
-      const minute = new Date(t.createdAt).getMinutes().toString().padStart(2, '0');
-      const time = `${hour}:${minute}`;
-
+    return state.transactions.slice(0, isMobile ? 3 : 5).map(t => {
+      const d = new Date(t.createdAt);
+      const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
       if (t.type === 'OUT') {
         const profit = Math.floor(t.totalPrice * 0.8);
-        const key = `sale-${time}`;
-        if (!txMap.has(key)) {
-          txMap.set(key, {
-            time,
-            desc: t.note || `Penjualan: ${t.qty}x ${t.productName}`,
-            ai: `AI: Laba +Rp ${profit.toLocaleString('id-ID')}. Stok OK.`,
-            type: 'sale',
-          });
-        }
+        return {
+          time,
+          desc: t.note || `Penjualan: ${t.qty}x ${t.productName}`,
+          aiLabel: 'Laba',
+          aiAmount: profit,
+          type: 'sale' as const,
+        };
       } else {
-        const key = `buy-${t.id}`;
-        txMap.set(key, {
+        return {
           time,
           desc: t.note || `Pembelian: ${t.qty}x ${t.productName}`,
-          ai: `AI: Biaya -Rp ${Math.abs(t.totalPrice).toLocaleString('id-ID')}. Stok +${t.qty} ${t.productName}.`,
-          type: 'purchase',
-        });
+          aiLabel: 'Biaya',
+          aiAmount: Math.abs(t.totalPrice),
+          type: 'purchase' as const,
+        };
       }
     });
-    return Array.from(txMap.values()).slice(0, isMobile ? 3 : 5);
   }, [state.transactions, isMobile]);
 
   const content = (
@@ -195,7 +189,35 @@ export default function Dashboard() {
         <div className={`flex flex-col gap-2.5 ${isMobile ? '' : 'col-span-2'}`}>
           <div className="flex justify-between items-center animate-fade-up animate-delay-3">
             <h3 className={`font-extrabold text-[#1A1F3A] ${isMobile ? 'text-[15px]' : 'text-base'}`}>Transaksi Terbaru</h3>
-            <span className="text-xs font-bold text-[#1A56DB] cursor-pointer hover:underline">Lihat semua</span>
+            <button 
+              onClick={() => {
+                setModalTitle('Semua Transaksi');
+                setModalContent(
+                  <div className="flex flex-col gap-2">
+                    {state.transactions.map((tx, idx) => {
+                      const hour = new Date(tx.createdAt).getHours().toString().padStart(2, '0');
+                      const minute = new Date(tx.createdAt).getMinutes().toString().padStart(2, '0');
+                      const time = `${hour}:${minute}`;
+                      return (
+                        <div key={idx} className="flex justify-between items-start py-3 border-b border-[#EEF0F6] last:border-b-0">
+                          <div className="flex-1">
+                            <div className="text-[11px] font-bold text-[#9BA3BC]">{time}</div>
+                            <div className="text-xs font-semibold text-[#1A1F3A] mt-0.5">{tx.note || tx.productName}</div>
+                            <div className={`text-[11px] font-bold mt-1 ${tx.type === 'OUT' ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+                              {tx.type === 'OUT' ? '+' : '-'}Rp {Math.abs(tx.totalPrice).toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                          <div className={`text-[11px] font-bold ${tx.type === 'OUT' ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+                            {tx.type === 'OUT' ? '💬' : '🛒'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+                setModalOpen(true);
+              }}
+              className="text-xs font-bold text-[#1A56DB] cursor-pointer hover:underline active:opacity-70 transition-opacity">Lihat semua</button>
           </div>
           <div className="flex flex-col gap-2.5">
             {recentTx.map((tx, i) => (
@@ -215,10 +237,10 @@ export default function Dashboard() {
                   <div className="text-[10px] font-bold text-[#9BA3BC]">{tx.time}</div>
                   <div className="text-xs font-semibold text-[#1A1F3A] leading-relaxed mt-0.5">{tx.desc}</div>
                   <div className="text-[11px] text-[#9BA3BC] font-medium mt-0.5">
-                    {tx.ai.includes('Laba') ? (
-                      <>AI: Laba <span className="text-[#22c55e] font-bold">+{tx.ai.split('+')[1]}</span></>
+                    {tx.type === 'sale' ? (
+                      <>AI: Laba <span className="text-[#22c55e] font-bold">+Rp {tx.aiAmount.toLocaleString('id-ID')}</span></>
                     ) : (
-                      <>AI: Biaya <span className="text-[#ef4444] font-bold">-{tx.ai.split('-')[1]}</span></>
+                      <>AI: Biaya <span className="text-[#ef4444] font-bold">-Rp {tx.aiAmount.toLocaleString('id-ID')}</span></>
                     )}
                   </div>
                 </div>

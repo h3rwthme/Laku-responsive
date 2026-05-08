@@ -19,7 +19,13 @@ export default function POS() {
   const cartTotal = state.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const cartCount = state.cart.reduce((sum, item) => sum + item.qty, 0);
 
-  const handleProductClick = (product: { id: string; name: string; price: number }) => {
+  const handleProductClick = (product: { id: string; name: string; price: number; stock: number }) => {
+    const cartItem = state.cart.find(c => c.productId === product.id);
+    const currentQtyInCart = cartItem?.qty ?? 0;
+    if (currentQtyInCart >= product.stock) {
+      showToast(`Stok ${product.name} tidak mencukupi!`);
+      return;
+    }
     dispatch({ type: 'ADD_TO_CART', payload: { productId: product.id, productName: product.name, price: product.price } });
     setSelectedProduct(product.id);
     setTimeout(() => setSelectedProduct(null), 300);
@@ -27,22 +33,35 @@ export default function POS() {
 
   const handleCheckout = () => {
     if (state.cart.length === 0) return;
+
+    // Validate stock before processing
+    for (const item of state.cart) {
+      const product = state.products.find(p => p.id === item.productId);
+      if (!product || product.stock < item.qty) {
+        showToast(`Stok ${item.productName} tidak mencukupi!`);
+        return;
+      }
+    }
+
     setProcessing(true);
     setTimeout(() => {
+      const note = `Penjualan: ${state.cart.map(i => `${i.qty}x ${i.productName}`).join(', ')}`;
       state.cart.forEach(item => {
-        const product = state.products.find(p => p.id === item.productId);
-        if (!product) return;
-        if (product.stock < item.qty) { showToast(`Stok ${product.name} tidak mencukupi!`); return; }
+        // ADD_TRANSACTION for the sale record
         dispatch({
           type: 'ADD_TRANSACTION', payload: {
             id: Math.random().toString(36).substring(2, 15) + Date.now().toString(36),
             productId: item.productId, productName: item.productName, type: 'OUT' as const,
             qty: item.qty, totalPrice: item.price * item.qty,
-            note: `Penjualan: ${item.qty}x ${item.productName}`,
+            note,
             createdAt: new Date().toISOString(),
           }
         });
-        dispatch({ type: 'ADJUST_STOCK', payload: { productId: item.productId, qty: item.qty, type: 'OUT', note: `Penjualan: ${item.qty}x ${item.productName}` } });
+        // Only update stock (without creating another transaction)
+        dispatch({ type: 'UPDATE_PRODUCT', payload: {
+          ...state.products.find(p => p.id === item.productId)!,
+          stock: state.products.find(p => p.id === item.productId)!.stock - item.qty,
+        }});
       });
       dispatch({ type: 'CLEAR_CART' });
       setProcessing(false);
@@ -124,7 +143,14 @@ export default function POS() {
               </button>
               <span className="text-sm font-extrabold text-[#1A1F3A] w-6 text-center">{item.qty}</span>
               <button
-                onClick={() => dispatch({ type: 'UPDATE_CART_QTY', payload: { productId: item.productId, delta: 1 } })}
+                onClick={() => {
+                  const prod = state.products.find(p => p.id === item.productId);
+                  if (prod && item.qty >= prod.stock) {
+                    showToast(`Stok ${item.productName} tidak mencukupi!`);
+                    return;
+                  }
+                  dispatch({ type: 'UPDATE_CART_QTY', payload: { productId: item.productId, delta: 1 } });
+                }}
                 className="w-8 h-8 rounded-lg bg-white flex items-center justify-center active:scale-90 transition-transform shadow-sm">
                 <Plus size={14} className="text-[#22c55e]" />
               </button>

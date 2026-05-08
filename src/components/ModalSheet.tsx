@@ -22,7 +22,7 @@ export default function ModalSheet({ open, onClose, title, children }: ModalShee
 
   return (
     <div
-      className="absolute inset-0 z-[100] flex items-end modal-overlay"
+      className="fixed inset-0 z-[100] flex items-end modal-overlay"
       style={{ backdropFilter: 'blur(4px)' }}
       onClick={onClose}
     >
