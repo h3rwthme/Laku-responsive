@@ -32,17 +32,20 @@ function AppContent() {
     }
   };
 
-  // Mobile: full screen layout
+  // Mobile: phone frame simulation
   if (isMobile) {
     return (
-      <div className="w-full bg-[#F8F9FD] flex flex-col" style={{ minHeight: '100dvh' }}>
-        <StatusBar />
-        <TopNav />
-        <main className="flex-1 flex flex-col overflow-hidden relative min-h-0">
-          {renderPage()}
-        </main>
-        <BottomNav />
-        <Toast />
+      <div className="min-h-screen w-full bg-[#E8EDF8] flex justify-center items-center">
+        <div
+          className="w-full max-w-[430px] min-h-screen bg-[#F8F9FD] flex flex-col relative">
+          <StatusBar />
+          <TopNav />
+          <main className="flex-1 flex flex-col overflow-hidden relative">
+            {renderPage()}
+          </main>
+          <BottomNav />
+          <Toast />
+        </div>
       </div>
     );
   }

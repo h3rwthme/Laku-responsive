@@ -21,8 +21,7 @@ export default function BottomNav() {
   return (
     <nav className="shrink-0 bg-white border-t border-[#EEF0F6] z-50"
          style={{ boxShadow: '0 -4px 20px rgba(26,79,214,0.07)' }}>
-      <div className="flex items-center justify-around px-1 pt-2"
-           style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
+      <div className="flex items-center justify-around px-2 pt-2 pb-[max(12px,env(safe-area-inset-bottom))]">
         {tabs.map(tab => {
           const isActive = state.activeTab === tab.key;
           const Icon = tab.icon;
@@ -30,19 +29,21 @@ export default function BottomNav() {
             <button
               key={tab.key}
               onClick={() => dispatch({ type: 'SET_TAB', payload: tab.key })}
-              className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors duration-150 flex-1
+              className="relative flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-colors duration-150 min-w-[56px]
                          active:scale-95"
             >
-              <Icon
-                size={22}
-                className={`transition-colors duration-150 ${isActive ? 'text-[#1A56DB]' : 'text-[#9BA3BC]'}`}
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-              <span className={`text-[10px] font-bold transition-colors duration-150 leading-tight ${isActive ? 'text-[#1A56DB]' : 'text-[#9BA3BC]'}`}>
+              <div className="relative">
+                <Icon
+                  size={22}
+                  className={`transition-colors duration-150 ${isActive ? 'text-[#1A56DB]' : 'text-[#9BA3BC]'}`}
+                  strokeWidth={isActive ? 2.5 : 2}
+                />
+              </div>
+              <span className={`text-[10px] font-bold transition-colors duration-150 ${isActive ? 'text-[#1A56DB]' : 'text-[#9BA3BC]'}`}>
                 {tab.label}
               </span>
               {isActive && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#1A56DB] rounded-full" />
+                <div className="w-4 h-0.5 bg-[#1A56DB] rounded-full" />
               )}
             </button>
           );

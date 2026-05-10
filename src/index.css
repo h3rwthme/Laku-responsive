@@ -47,19 +47,12 @@
 @layer base {
   * {
     @apply border-border;
-    box-sizing: border-box;
-  }
-  html {
-    height: -webkit-fill-available;
   }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: contain;
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
   }
 }
 

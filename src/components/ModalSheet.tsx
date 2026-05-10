@@ -22,13 +22,12 @@ export default function ModalSheet({ open, onClose, title, children }: ModalShee
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-end modal-overlay"
-      style={{ backdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.4)' }}
+      className="fixed inset-0 z-[100] flex items-end modal-overlay"
+      style={{ backdropFilter: 'blur(4px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full bg-white rounded-t-3xl p-5 modal-sheet"
-        style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}
+        className="w-full bg-white rounded-t-3xl p-5 pb-8 modal-sheet"
         onClick={e => e.stopPropagation()}
       >
         <div className="w-10 h-1 bg-[#DDE1EF] rounded-full mx-auto mb-4" />
